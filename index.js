@@ -295,6 +295,33 @@ app.delete('/deletemycomment/:username',authenticate,(req, res)=>{
 
 
 
+app.post('/addlikes/:postId',authenticate,(req, res)=>{
+    const loggeduser =req.user.username;
+    const loggeduserrole =req.user.role === 'admin';
+    const {postId} = req.params;
+
+   if(!postId){
+   return res.status(400).json({message: "Post Id is required"})
+   }
+
+   const checkUserId = post.find(post => post.user_id === parseInt(postId));
+
+   if(!checkUserId){
+    return res.status(404).json({message: "not post found"})
+   }
+   if(loggeduser === checkUserId.username && !loggeduserrole){
+    return res.status(400).json({message: "You have not permission to like post"})
+   }
+   const userlikes = post.filter(likes => likes.username === loggeduser);
+    if(userlikes){
+        // const addlike = like;
+        checkUserId.likes.push(`${loggeduser} like this post`);
+    }
+   
+    
+    return res.status(200).json(post)
+});
+
 app.listen(port,()=>{
     console.log(`server run on http://localhost:${port}`);
 })
