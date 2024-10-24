@@ -195,6 +195,106 @@ app.delete('/deletemyposts/:username',authenticate,(req, res)=>{
     return res.status(200).json({message: 'Delete your post'})
 });
 
+const usercomment = [
+    {
+    post_id: 1,   
+    username: "Fiza",
+    comment : ["Interesting","Good"],
+},
+{
+    post_id: 2,
+    username: "user1",
+    comment : ["Good","Interesting"],
+},
+{
+    post_id: 3,
+    username: "user2",
+    comment : ["Great","nice"],
+},
+{
+    post_id: 4,
+    username: "user3",
+    comment : ["nice","Interesting"],
+},
+{
+    post_id: 5,
+    username: "user4",
+    comment : ["Interesting","Good"],
+},
+{
+    post_id: 6,
+    username: "user5",
+    comment : ["Interesting"],
+},
+]
+
+app.get('/posts/comment',authenticate,(req, res)=>{
+    const loggeduser =req.user.username;
+
+    const comments = usercomment.filter(usercomments => usercomments.username !== loggeduser);
+    res.status(200).json(comments)
+
+});
+
+app.get('/mypostcomments',authenticate,(req, res)=>{
+    const loggeduser =req.user.username;
+
+    const comments = usercomment.filter(usercomments => usercomments.username === loggeduser);
+    res.status(200).json({message: 'You can not add comment',comments})
+
+});
+
+app.post('/addcomments/:postId/:addcomment',authenticate,(req, res)=>{
+    const loggeduser =req.user.username;
+    const {postId,addcomment} = req.params;
+
+   if(!addcomment){
+   return res.status(400).json({message: "comment is required"})
+   }
+
+   const checkUserId = usercomment.find(post => post.post_id === parseInt(postId));
+
+   if(!checkUserId){
+    return res.status(404).json({message: "not post found"})
+   }
+   if(loggeduser === checkUserId.username){
+    return res.status(400).json({message: "You have not permission to add comment"})
+   }
+    const comments = usercomment.filter(usercomments => usercomments.username === loggeduser);
+    if(comments){
+        const newcomment = addcomment;
+        checkUserId.comment.push(`${loggeduser} add comment , ${newcomment}`);
+    }
+    
+    return res.status(200).json(usercomment)
+});
+
+app.delete('/deletepostcomment/admin/:id',authenticate,(req, res)=>{
+    const loggeduser =req.user.role === 'admin';
+    if(!loggeduser){
+       return res.status(403).json({message: "You do not have permission to delete users Comments"})
+    }
+    const user_id =req.user.username;
+    const otheruserpost = usercomment.filter(cmt => cmt.user_id === user_id);
+    if(!otheruserpost){
+       return res.status(404).json({message: "No Posts found"})
+    }
+   return res.status(200).json({message: `Admin Delete User Comment`})
+});
+
+app.delete('/deletemycomment/:username',authenticate,(req, res)=>{
+    const {username} = req.params;
+    const loggeduser =req.user.username;
+
+    if(loggeduser !== username){
+       return res.status(403).json({message: "You do not have permission to delete users Posts"})
+    }
+    
+   return res.status(200).json({message: 'Delete your comment'})
+});
+
+
+
 app.listen(port,()=>{
     console.log(`server run on http://localhost:${port}`);
 })
