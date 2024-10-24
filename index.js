@@ -114,6 +114,87 @@ app.get('/admin',authenticate,(req, res)=>{
 })
 
 
+const post = [{
+    user_id: 1,
+    username: "Fiza",
+    post_content: "bxzjkcbnk",
+    likes: []
+},
+{
+    user_id: 2,
+    username: "user1",
+    post_content: "bxzjkcbnk",
+    likes: []
+},
+{
+    user_id: 3,
+    username: "user2",
+    post_content: "bxzjkcbnk",
+    likes: []
+},
+{
+    user_id: 4,
+    username: "user3",
+    post_content: "bxzjkcbnk",
+    likes: []
+},
+{
+    user_id: 5,
+    username: "user4",
+    post_content: "bxzjkcbnk",
+    likes: []
+},
+{
+    user_id: 6,
+    username: "user5",
+    post_content: "bxzjkcbnk",
+    likes: []
+},
+]
+app.get('/posts/other-user',authenticate,(req, res)=>{
+    const loggeduser =req.user.username;
+
+    const otheruserpost = post.filter(posts => posts.username !== loggeduser);
+   return res.status(200).json(otheruserpost)
+
+});
+
+app.get('/myposts',authenticate,(req, res)=>{
+    const loggeduser =req.user.username;
+
+    const userpost = post.filter(posts => posts.username === loggeduser);
+    if(!userpost){
+      return  res.status(404).json({message: "No post show"})
+    }
+   return res.status(200).json({message: `${loggeduser} Posts`,
+    userpost});
+
+});
+
+app.delete('/deleteposts/admin/:id',authenticate,(req, res)=>{
+    const loggeduser =req.user.role === 'admin';
+    if(!loggeduser){
+      return  res.status(403).json({message: "You do not have permission to delete users Posts"})
+    }
+    const user_id =req.user.username;
+    const otheruserpost = post.filter(posts => posts.user_id === user_id);
+    if(!otheruserpost){
+       return res.status(404).json({message: "No Posts found"})
+    }
+   return res.status(200).json({message: 'Delete User Post'})
+});
+
+app.delete('/deletemyposts/:username',authenticate,(req, res)=>{
+    const {username} = req.params;
+    const loggeduser =req.user.username;
+
+    if(loggeduser !== username){
+       return res.status(403).json({message: "You do not have permission to delete users Posts"})
+    }
+    
+    return res.status(200).json({message: 'Delete your post'})
+});
+
 app.listen(port,()=>{
     console.log(`server run on http://localhost:${port}`);
 })
